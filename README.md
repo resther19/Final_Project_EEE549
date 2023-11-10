@@ -1,4 +1,4 @@
-# Final Project CSE549
+# Final Project EEE549
 
 ## Overview
 
