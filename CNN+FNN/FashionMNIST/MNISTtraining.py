@@ -22,7 +22,7 @@ train_data = train_dataset.data
 train_data = train_data.unsqueeze(1).float()
 train_targets = train_dataset.targets
 
-#------------------------hyperparameter tuning------------------------------- 
+#--------------------------------------------hyperparameter tuning------------------------------- 
 
 #tuning learning rate
 learning_rate = [0.0001, 0.005, 0.001, 0.003, 0.007, 0.01, 0.02, .05]
@@ -66,7 +66,7 @@ for k in range(len(momentum_list)):
         momentum = momentum_list[k]
         )
 # %%
-
+#-----------------------------------Plotting results-------------------------------
 plt.figure(figsize=(10, 6))
 plt.title('K-Fold Validation accuracy Vs Learning rate')
 plt.xlabel('Learning Rate')
@@ -92,17 +92,4 @@ plt.ylabel('Avg Cross-validation Accuracy')
 plt.plot(momentum_list, avg_acc_momentum, marker = '*' , color='black')
 plt.savefig("momentumtraining.png", dpi=300)
 plt.show()
-# %%
-
-
-#######    ultimate model with all the best parameters 
-
-
-
-
-
-
-# %%
-
-
 # %%
