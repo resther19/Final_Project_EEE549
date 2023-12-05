@@ -8,6 +8,7 @@ from torch.utils.data import TensorDataset
 from torch.utils.data import DataLoader
 import torch.optim as optim
 from models import FNN1
+from models import FNN2
 
 
 def kfoldtrain( X_train_tensor, y_train_tensor, device, learning_rate, epochs, momentum):
@@ -35,12 +36,15 @@ def kfoldtrain( X_train_tensor, y_train_tensor, device, learning_rate, epochs, m
         train_subsampler = torch.utils.data.SubsetRandomSampler(train_ids)
         val_subsampler = torch.utils.data.SubsetRandomSampler(val_ids)
 
-        trainloader = DataLoader(dataset, batch_size=100, sampler=train_subsampler)
-        valloader = DataLoader(dataset, batch_size=100, sampler=val_subsampler)
+        trainloader = DataLoader(dataset, batch_size=10, sampler=train_subsampler)
+        valloader = DataLoader(dataset, batch_size=10, sampler=val_subsampler)
 
         # Initialize network and optimizer
-        net = FNN1()
-        optimizer = optim.SGD(net.parameters(), lr=learning_rate, momentum = momentum)
+        net = FNN2()
+        #optimizer = optim.SGD(net.parameters(), lr=learning_rate, momentum = momentum)
+        #optimizer = optim.Adam(net.parameters(), lr=learning_rate)#, momentum = momentum)
+        optimizer = optim.RMSprop(net.parameters(), lr=learning_rate)#, momentum = momentum)
+
         criterion = nn.CrossEntropyLoss()
 
         # Epoch loop
