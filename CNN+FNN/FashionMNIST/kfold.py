@@ -6,7 +6,7 @@ from torchvision import datasets, transforms
 from sklearn.model_selection import KFold
 import numpy as np
 import matplotlib.pyplot as plt
-from CNN2layer import CNNmodel
+from CNN1layer import CNNmodel
 
 def kfoldtrain(train_data, train_targets, device, learning_rate, epochs, momentum):
     n_splits = 5
