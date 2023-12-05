@@ -40,11 +40,10 @@ class PyTorchGridSearchModel(BaseEstimator):
         self.model = FNN1()  
         self.model.to(device)
         
-        # Define your loss function and optimizer
         criterion = nn.CrossEntropyLoss()
-        optimizer = optim.Adam(self.model.parameters(), lr=self.learning_rate)
+        optimizer = optim.Adam(self.model.parameters(), lr=self.learning_rate)    #we used Adam for this dataset because SGD was performing poorly
         
-        # Convert X and y to PyTorch tensors
+                                                            # Convert X and y to PyTorch tensors
         X_tensor = torch.tensor(X, dtype=torch.float32)
         y_tensor = torch.tensor(y, dtype=torch.long)
         dataset = TensorDataset(X_tensor, y_tensor)
@@ -75,14 +74,14 @@ class PyTorchGridSearchModel(BaseEstimator):
         predictions = self.predict(X)
         return accuracy_score(y, predictions)
 
-# Define the parameter grid
+# Defining the parameter grid
 param_grid = {
     'learning_rate': [0.0001, 0.001, 0.002, .005, .01],
     'epochs': [100, 150, 200],
-    'batch_size': [50,100, 150, 200, 250]
+    'batch_size': [50, 100, 150, 200, 250]
 }
 
-# Initialize GridSearchCV
+# Initialize GridSearching with cross validation 
 grid_search = GridSearchCV(PyTorchGridSearchModel(), param_grid, cv=5, scoring='accuracy')
 
 grid_search.fit(X_train, y_train)
