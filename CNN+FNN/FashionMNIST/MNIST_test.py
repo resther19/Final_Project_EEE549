@@ -18,18 +18,18 @@ print(device)
 data_transforms = transforms.Compose([
     transforms.RandomHorizontalFlip(),
     transforms.RandomRotation(10),  
-    transforms.RandomAffine(degrees=0, translate=(0.1, 0.1)), 
+    transforms.RandomAffine(degrees=0, translate=(0.1, 0.1)),                 #Data augmentation 
     transforms.ToTensor(),
     transforms.Normalize((0.5,), (0.5,))
 ])
 
 train_dataset = datasets.FashionMNIST('./data', train=True, download=True, transform=data_transforms)
 train_data = train_dataset.data
-train_data = train_data.unsqueeze(1).float()
+train_data = train_data.unsqueeze(1).float()      #introducing a channel dimension for CNN model fitting
 train_targets = train_dataset.targets
 
 transform_test = transforms.Compose([transforms.ToTensor(),
-                                   
+                                                               #no augmentation in the test data, not allowed.
                                 transforms.Normalize((0.5,), (0.5,))])
 
 test_dataset = datasets.FashionMNIST('.data/', download=True, train=False, transform=transform_test)
@@ -42,24 +42,23 @@ trainloader = torch.utils.data.DataLoader(train, batch_size=64, shuffle=True)
 
 test = torch.utils.data.TensorDataset(test_data, test_targets)
 testloader = torch.utils.data.DataLoader(test, batch_size=64, shuffle=True)
+
 # Instantiate the model
 model = CNNmodel()
 model = model.to(device)
 # Define the loss
 
-optimizer = optim.SGD(model.parameters(), lr=0.003, momentum=0.9 )
+optimizer = optim.SGD(model.parameters(), lr=0.001, momentum=0.9 )
 
 # Train the network
-epochs = 5
+epochs = 50
 for e in range(epochs):
     running_loss = 0
     correct = 0
     for images, labels in trainloader:
         images, labels = images.to(device),labels.to(device)
-        # Clear the gradients, do this because gradients are accumulated
         optimizer.zero_grad()
         
-        # Forward pass, then backward pass, then update weights
         output = model(images)
         loss = F.cross_entropy(output, labels)
         loss.backward()
@@ -73,7 +72,7 @@ for e in range(epochs):
     print(f"epoch {e + 1} : Train accuracy: {train_accuracy}")
 
 
-# Test out your network!
+# Testing the model
 
 model.eval()
 true_labels = []
@@ -99,13 +98,13 @@ precision, recall, f1_score, _ = precision_recall_fscore_support(true_labels, pr
 
 
 # %%
-# Plot confusion matrix using seaborn
+
 plt.figure(figsize=(10, 8))
 sns.heatmap(conf_mtx, annot=True, fmt='d', cmap='Blues')
 plt.xlabel('Predicted labels')
 plt.ylabel('True labels')
 plt.title('Confusion Matrix')
-plt.savefig("confusionMatrix_2layer.png", dpi=300)
+plt.savefig("confusionMatrix_1layer.png", dpi=300)
 plt.show()
 
 for i, (p, r, f) in enumerate(zip(precision, recall, f1_score)):
