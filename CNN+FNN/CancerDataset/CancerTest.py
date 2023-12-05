@@ -8,6 +8,7 @@ import torch.optim as optim
 import matplotlib.pyplot as plt
 from data_processing import cancer
 from models import FNN1
+from models import FNN2
 import seaborn as sns
 
 
@@ -19,12 +20,12 @@ X_train, X_test, y_train, y_test = cancer()
 train_dataset = TensorDataset(X_train, y_train)
 test_dataset = TensorDataset(X_test, y_test)
 
-trainloader = DataLoader(train_dataset, batch_size=100, shuffle=True)
-testloader = DataLoader(test_dataset, batch_size=100, shuffle=False)
+trainloader = DataLoader(train_dataset, batch_size=30, shuffle=True)
+testloader = DataLoader(test_dataset, batch_size=150, shuffle=False)
 
 #**************************8training loop********************************
-net = FNN1().to(device)
-optimizer = optim.SGD(net.parameters(), lr=0.01, momentum = 0.9)
+net = FNN2().to(device)
+optimizer = optim.SGD(net.parameters(), lr=0.005, momentum = 0.9)
 criterion = nn.CrossEntropyLoss()
 epochs = 10
 for epoch in range(epochs):
