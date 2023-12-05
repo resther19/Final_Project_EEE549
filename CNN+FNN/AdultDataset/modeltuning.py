@@ -22,14 +22,13 @@ y_train_tensor = torch.LongTensor(y_train.values)
 
 
 
-learning_rate = 0.001
 
 avg_acc = kfoldtrain(           #this function we used to tune the model with self created kfold function
                                 #we would change the model in the models.py and change the optimizer in kfold.py
         X_train_tensor, 
         y_train_tensor, 
         device, 
-        learning_rate,
+        learning_rate = 0.001,
         epochs = 50,
         momentum=0.9
         )
