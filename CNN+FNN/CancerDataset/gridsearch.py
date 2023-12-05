@@ -86,6 +86,6 @@ print("Best score found: ", grid_search.best_score_)
 
 # %%
 
-cv_results = grid_search.cv_results_
-for mean_score, params in zip(cv_results['mean_ test_score'], cv_results['params']):
-    print(params, '-> Mean CV Score:', mean_score)
+#cv_results = grid_search.cv_results_
+#for mean_score, params in zip(cv_results['mean_ test_score'], cv_results['params']):
+#    print(params, '-> Mean CV Score:', mean_score)
