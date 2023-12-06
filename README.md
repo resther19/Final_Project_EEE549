@@ -13,13 +13,4 @@
 - **UCI Cancer Dataset:** Applied for cancer diagnosis classification.
 - **Fashion MNIST:** Utilized for image classification in the context of clothing items.
 
-## Documentation
-
-
-## Quick Start Guide
-
-
-## Results
-
-
 
