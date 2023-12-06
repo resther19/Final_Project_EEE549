@@ -1,0 +1,140 @@
+# %%
+import numpy as np
+import matplotlib.pyplot as plt
+import seaborn as sns
+from sklearn.svm import SVC
+from sklearn.metrics import classification_report, confusion_matrix, roc_curve, auc
+from torchvision import datasets, transforms
+from sklearn.decomposition import PCA
+from sklearn.model_selection import GridSearchCV, LearningCurveDisplay, ValidationCurveDisplay, ShuffleSplit
+from sklearn.preprocessing import label_binarize
+
+# Define transformations
+transform = transforms.Compose([transforms.ToTensor(),
+                                transforms.Lambda(lambda x: x.numpy().flatten())])
+
+# Load the Fashion MNIST dataset
+trainset = datasets.FashionMNIST(root='~/.pytorch/F_MNIST_data/', train=True, download=True, transform=transform)
+testset = datasets.FashionMNIST(root='~/.pytorch/F_MNIST_data/', train=False, download=True, transform=transform)
+
+# Prepare the data
+X_train, y_train = zip(*[(image, label) for image, label in trainset])
+X_test, y_test = zip(*[(image, label) for image, label in testset])
+
+X_train = np.array(X_train)
+X_test = np.array(X_test)
+y_train = np.array(y_train)
+y_test = np.array(y_test)
+
+# Flatten the images
+X_train = X_train.reshape(len(X_train), -1)
+X_test = X_test.reshape(len(X_test), -1)
+
+# Apply PCA for dimensionality reduction
+pca = PCA(n_components=0.95)  # Keep 95% of variance
+X_train_pca = pca.fit_transform(X_train)
+X_test_pca = pca.transform(X_test)
+
+# 5-fold cross valdation
+param_range = [0.001, 0.01, 0.1, 1, 10]
+param_grid = {'C': param_range}
+grid_search = GridSearchCV(SVC(kernel="linear"), param_grid, cv=5, scoring="accuracy")
+grid_search.fit(X_train_pca, y_train)
+
+best_C = grid_search.best_params_['C']
+best_accuracy = grid_search.best_score_
+
+print(f"Best parameter C: {best_C}")
+print(f"Accuracy with best C: {best_accuracy:.4f}")
+
+# Train final model with the best C value and probability estimates
+final_model = SVC(kernel='linear', C=best_C, probability=True)
+final_model.fit(X_train_pca, y_train)  # Train on the entire training set
+
+# Evaluate the final model on the test set
+y_pred = final_model.predict(X_test_pca)
+y_proba = final_model.predict_proba(X_test_pca)[:, 1]  # Probabilities for the positive class
+
+print("\nTest Set Evaluation")
+print(classification_report(y_test, y_pred, digits=3))
+
+# Generate the confusion matrix
+conf_matrix = confusion_matrix(y_test, y_pred)
+sns.heatmap(conf_matrix, annot=True, fmt='g')
+plt.title('Confusion Matrix for SVM with Linear Kernel')
+plt.xlabel('Predicted Label')
+plt.ylabel('True Label')
+plt.savefig('LinealKernel_cm_FashionMNIST.pdf')
+
+# ROC Curve for each class
+n_classes = len(np.unique(y_test))
+y_test_bin = label_binarize(y_test, classes=np.arange(n_classes))
+y_pred_bin = label_binarize(y_pred, classes=np.arange(n_classes))
+
+# Compute ROC curve and ROC area for each class
+fpr = dict()
+tpr = dict()
+roc_auc = dict()
+for i in range(n_classes):
+    fpr[i], tpr[i], _ = roc_curve(y_test_bin[:, i], y_pred_bin[:, i])
+    roc_auc[i] = auc(fpr[i], tpr[i])
+
+# Aggregate all false positive rates
+all_fpr = np.unique(np.concatenate([fpr[i] for i in range(n_classes)]))
+
+# Then interpolate all ROC curves at these points
+mean_tpr = np.zeros_like(all_fpr)
+for i in range(n_classes):
+    mean_tpr += np.interp(all_fpr, fpr[i], tpr[i])
+
+# Finally average and compute AUC
+mean_tpr /= n_classes
+# %%
+from itertools import cycle
+
+# Plot all ROC curves
+plt.figure(figsize=(10, 8))
+colors = cycle(['orange', 'red', 'green', 'cyan', 'olive', 'yellow', 'black', 'blue', 'indigo',  'magenta'])
+for i, color in zip(range(n_classes), colors):
+    plt.plot(fpr[i], tpr[i], color=color, lw=2,
+             label='ROC curve of class {0} (area = {1:0.2f})'.format(i, roc_auc[i]))
+
+plt.plot([0, 1], [0, 1], 'k--', lw=2)
+plt.xlim([0.0, 1.0])
+plt.ylim([0.0, 1.05])
+plt.xlabel('False Positive Rate')
+plt.ylabel('True Positive Rate')
+plt.title('Multi-Class ROC Curve')
+plt.legend(loc="lower right")
+plt.savefig('LinealKernel_ROC_cancer.pdf')
+
+# %%
+# Define the best SVM model using the found hyperparameters
+best_svm = SVC(kernel='linear', C=best_C)
+
+# Define learning curve parameters
+train_sizes = np.linspace(0.1, 1.0, 3)
+
+# Plot the learning curve
+fig, ax = plt.subplots(figsize=(10, 6))
+
+LearningCurveDisplay.from_estimator(
+    estimator=best_svm,
+    X=X_train_pca,
+    y=y_train,
+    train_sizes=train_sizes,
+    n_jobs=4,
+    ax=ax,
+    scoring='accuracy'
+)
+
+plt.title(f"Learning curve for SVM with linear kernel")
+plt.savefig('LinealKernel_learning_FashionMNIST.pdf')
+
+ValidationCurveDisplay.from_estimator(
+   estimator=SVC(kernel='linear'), X=X_train, y=y_train, param_name="C", param_range=np.logspace(-3, 3, 3), scoring='accuracy'
+)
+plt.title('5-fold validation for the hyperparameter C')
+plt.savefig('LinealKernel_C_parameter_FashionMNIST.pdf')
+
+# %%
